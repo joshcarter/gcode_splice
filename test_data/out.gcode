@@ -1,15 +1,18 @@
 ; begin file1.gcode
 ; file 1
-M104 S101
+M104 S101 ; foo
+; this should be ignored
+; M104 S500
 M190 S101
 M106 S101
+; M106 S500
 M900 K1
 ; before spice 1, file 1
 ; end file1.gcode
 ; -------------------- splice begin --------------------
 M104 S151 ; extruder temp for filament change
 G92 E0.0
-G1 E-3 ; big retract
+G1 E-3.0 ; big retract
 G92 E0.0
 M107 ; fan off
 M600 ; filament change
@@ -28,7 +31,7 @@ M106 S202
 ; -------------------- splice begin --------------------
 M104 S252 ; extruder temp for filament change
 G92 E0.0
-G1 E-3 ; big retract
+G1 E-3.0 ; big retract
 G92 E0.0
 M107 ; fan off
 M600 ; filament change

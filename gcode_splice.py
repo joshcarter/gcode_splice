@@ -17,11 +17,11 @@ if len(args.files) < 2:
 print(f'saving to output file: {args.out}')
 
 # Gcode RE's
-extruder_temp = re.compile('M10[49]\s+[RS](\d+)')
-fan_speed = re.compile('M106\s+S(\d+)')
-fan_off = re.compile('M107')
-filament_change = re.compile('M600')
-linear_advance = re.compile('M900\s+K(\d+)')
+extruder_temp = re.compile('^M10[49]\s+[RS](\d+)')
+fan_speed = re.compile('^M106\s+S(\d+)')
+fan_off = re.compile('^M107')
+filament_change = re.compile('^M600')
+linear_advance = re.compile('^M900\s+K(\d+)')
 
 # each file's props, indexed first by order in args.files, second by section
 props = []
