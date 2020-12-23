@@ -22,6 +22,7 @@ fan_speed = re.compile('^M106\s+S(\d+)')
 fan_off = re.compile('^M107')
 filament_change = re.compile('^M600')
 linear_advance = re.compile('^M900\s+K(\d+)')
+xy_move = re.compile('^G1\s+X([0-9.]+)\s+Y([0-9.]+)')
 
 # each file's props, indexed first by order in args.files, second by section
 props = []
@@ -45,6 +46,9 @@ for i in range(len(args.files)):
             if filament_change.match(line):
                 # Create new section; copy last settings forward
                 props[i].append(props[i][section].copy())
+                # Remove the XY move
+                if 'xy_move' in props[i][section+1]:
+                    del props[i][section+1]['xy_move']
                 section += 1
                 # print(f'filament change in "{file}" at L{linenum}, section {section}')
             elif section <= i:
@@ -60,6 +64,11 @@ for i in range(len(args.files)):
                 elif m := linear_advance.match(line):
                     # print(f'linear advance at L{linenum}: {m.groups()[0]}')
                     props[i][section]['linear_advance'] = int(m.groups()[0])
+                elif m := xy_move.match(line):
+                    # capture XY position, but only the first one
+                    if 'xy_move' not in props[i][section]:
+                        # print(f'first XY move of section {section} at L{linenum}: {m.groups()[0]}, {m.groups()[1]}')
+                        props[i][section]['xy_move'] = [float(m.groups()[0]), float(m.groups()[1])]
             elif section > i:
                 break  # don't need to scan any further
 
@@ -85,6 +94,7 @@ with open(args.out, 'w') as out:
                     if section > i:
                         file1_props = props[i][section-1]
                         file2_props = props[i+1][section-1]
+                        file2_nextprops = props[i+1][section]
 
                         # print(f'splice in "{file}" at L{linenum}')
                         # print(f'file1_props i={i} section={section-1}:')
@@ -105,6 +115,9 @@ with open(args.out, 'w') as out:
                         # out.write('G91 ; relative position mode\n')
                         # out.write('G1 Z3.0 ; move nozzle up to clear part\n')
                         # out.write('G90 ; absolute position mode\n')
+                        if 'xy_move' in file2_nextprops:
+                            # Move to position for where we'll resume the print
+                            out.write(f'G1 X{file2_nextprops["xy_move"][0]} Y{file2_nextprops["xy_move"][1]} ; move to where next section begins\n')
                         out.write('M107 ; fan off\n')
                         out.write('M600 ; filament change\n')
                         out.write(f'M104 S{file2_props["extruder_temp"]} ; extruder temp for next filament\n')
