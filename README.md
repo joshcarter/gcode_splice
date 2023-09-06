@@ -23,5 +23,24 @@ The splicer will take the first part (up to the first M600 command)
 from the TPU gcode, then the next part from the PETG gcode, and so
 forth. At each filament change, the extruder temp, fan speed, and so
 forth will be adjusted appropriately. I recommend you review the code
-at the splice points to ensure it's doing what you want! The splicer
-is easy to change if you want different behavior.
+at the splice points to ensure it's doing what you want!
+
+## Single Input File Use
+
+It can be useful to use the splicer even for a single gcode file with
+M600 filament change commands because the splicer adds some extra
+magic around the M600: it pre-positions X/Y in the right place before
+the filament change, it turns off the fan before the filament change,
+and sets the fan speed correctly afterward. If you run with one input
+file and no output file, the input file will be replaced with a
+spliced version.
+
+## Limitations
+
+There's a to-do list at the beginning of the Python file. The main
+limitation currently is that the linear advance gcode isn't handled
+properly. Each material might have different (and multiple) M900
+commands. Currently the splicer doesn't insert new M900's after a
+filament change, so the M900 behavior of the first gcode file will be
+used for the entire print.
+
